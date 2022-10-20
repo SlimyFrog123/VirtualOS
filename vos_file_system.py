@@ -138,7 +138,11 @@ class FileSystem:
 
     def run_python_script(self, filepath: str) -> str:
         path: Path = Path(str(filepath))
-        script_path: Path = path.as_local
+
+        if path.path.startswith('/'):
+            script_path: Path = path.as_local
+        else:
+            script_path: Path = Path(self.cwd.path + '\\' + path.path)
 
         if os.path.exists(script_path.path):
             process = subprocess.run(['python', script_path.path], cwd=self.cwd.as_local.path)

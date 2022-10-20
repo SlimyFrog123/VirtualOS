@@ -48,6 +48,11 @@ class ShellCommands:
                                                         needs_root=True)
         _python_command: Command = Command('python', _python_command_info, self.python_command)
 
+        _poweroff_command_info: CommandInfo = CommandInfo(name='poweroff', description='Shutdowns the operating system.',
+                                                            usage='\tpoweroff - Shutdowns the operating system.',
+                                                            needs_root=True)
+        _poweroff_command: Command = Command('poweroff', _poweroff_command_info, self.poweroff_command)
+
         # Add commands to the list.
         self.commands[_help_command.keyword] = _help_command
         self.commands[_clear_command.keyword] = _clear_command
@@ -55,6 +60,7 @@ class ShellCommands:
         self.commands[_cd_command.keyword] = _cd_command
         self.commands[_os_info_command.keyword] = _os_info_command
         self.commands[_python_command.keyword] = _python_command
+        self.commands[_poweroff_command.keyword] = _poweroff_command
 
     def run(self, args: list, as_admin: bool) -> str:
         for command in self.commands.values():
@@ -113,3 +119,7 @@ class ShellCommands:
             return 'Please specify a script.'
         else:
             return self.file_system.run_python_script(args[0])
+
+    def poweroff_command(self, args: list, as_admin: bool) -> str:
+        if as_admin:
+            quit()
