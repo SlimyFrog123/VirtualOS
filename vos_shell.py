@@ -27,7 +27,8 @@ class Shell:
         self.os_info = os_info
 
     def run(self):
-        shell_commands: ShellCommands = ShellCommands(file_system=self.file_system, os_info=self.os_info)  # Create a shell commands object.
+        shell_commands: ShellCommands = ShellCommands(file_system=self.file_system,
+                                                      os_info=self.os_info)  # Create a shell commands object.
 
         while True:
             try:
@@ -50,7 +51,7 @@ class Shell:
 
                         output = shell_commands.run(args=tokens, as_admin=as_admin)
 
-                        if not output == '':
+                        if not output == '' and output is not None and str(output) != 'None':
                             print(output)
             except KeyboardInterrupt:
                 break

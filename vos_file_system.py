@@ -4,7 +4,10 @@
 
 
 import os
+import subprocess
 import pathlib
+
+from vos_logger import Logger
 
 
 ##############################
@@ -23,7 +26,7 @@ FILE_SYSTEM_ROOT = pathlib.Path.joinpath(FILE_SYSTEM_START, 'vos_fs')  # The roo
 
 class Path:
     def __init__(self, filepath: str):
-        self.path = filepath
+        self.path: str = filepath
 
     def __repr__(self):
         return f'Path({self.path})'
@@ -61,12 +64,14 @@ class Path:
 
 
 class FileSystem:
-    def __init__(self, root: str = None):
+    def __init__(self, logger: Logger, root: str = None):
         # Root directory of the file system.
         if root is None:
             self.root: Path = Path(str(FILE_SYSTEM_ROOT))
         else:
             self.root: Path = Path(root)
+
+        self.logger = logger
 
         self.cwd: Path = self.root  # Current Working Directory.
         self.cwd_dirs: list = list()  # Current Working Directory's Directories.
@@ -130,3 +135,13 @@ class FileSystem:
                 return ''
             else:
                 return f'No such directory: {attempted_path.path}'
+
+    def run_python_script(self, filepath: str) -> str:
+        path: Path = Path(str(filepath))
+        script_path: Path = path.as_local
+
+        if os.path.exists(script_path.path):
+            process = subprocess.run(['python', script_path.path], cwd=self.cwd.as_local.path)
+            return str(process.stdout)
+        else:
+            return f'No such file: {script_path.path}'

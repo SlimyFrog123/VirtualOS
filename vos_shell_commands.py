@@ -112,4 +112,4 @@ class ShellCommands:
         if len(args) == 0:
             return 'Please specify a script.'
         else:
-            return self.file_system.run_python_script(Path(args[0]))
+            return self.file_system.run_python_script(args[0])
