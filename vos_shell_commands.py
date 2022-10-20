@@ -53,6 +53,10 @@ class ShellCommands:
                                                             needs_root=True)
         _poweroff_command: Command = Command('poweroff', _poweroff_command_info, self.poweroff_command)
 
+        _cat_command_info: CommandInfo = CommandInfo(name='cat', description='Displays the contents of a file.',
+                                                            usage='\tcat [file] - Displays the contents of a file.')
+        _cat_command: Command = Command('cat', _cat_command_info, self.cat_command)
+
         # Add commands to the list.
         self.commands[_help_command.keyword] = _help_command
         self.commands[_clear_command.keyword] = _clear_command
@@ -61,6 +65,7 @@ class ShellCommands:
         self.commands[_os_info_command.keyword] = _os_info_command
         self.commands[_python_command.keyword] = _python_command
         self.commands[_poweroff_command.keyword] = _poweroff_command
+        self.commands[_cat_command.keyword] = _cat_command
 
     def run(self, args: list, as_admin: bool) -> str:
         for command in self.commands.values():
@@ -123,3 +128,9 @@ class ShellCommands:
     def poweroff_command(self, args: list, as_admin: bool) -> str:
         if as_admin:
             quit()
+
+    def cat_command(self, args: list, as_admin: bool) -> str:
+        if len(args) == 0:
+            return 'Please specify a file.'
+        else:
+            return self.file_system.cat_file(args[0])

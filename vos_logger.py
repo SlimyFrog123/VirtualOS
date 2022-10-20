@@ -3,8 +3,32 @@
 ##############################
 
 
+import os
+import sys
 import colorama
 from vos_priority import Priority
+
+
+##############################
+# FUNCTIONS
+##############################
+
+
+def supports_color():
+    """
+    Returns True if the running system's terminal supports color, and False
+    otherwise.
+    """
+    plat = sys.platform
+    supported_platform = plat != 'Pocket PC' and (plat != 'win32' or
+                                                  'ANSICON' in os.environ)
+    # isatty is not always implemented, #6223.
+    is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
+
+    if os.getenv('INTELLIJ_BASED'):
+        return True
+    else:
+        return supported_platform and is_a_tty
 
 
 ##############################
@@ -13,10 +37,10 @@ from vos_priority import Priority
 
 
 class Logger:
-    def __init__(self, is_internal: bool = True):
+    def __init__(self):
         self.logs: list = list()  # All logs.
 
-        if not is_internal:
+        if not supports_color():
             colorama.init(convert=True)  # Initialize colorama.
 
     def log(self, message: str, priority: Priority = Priority.NONE):

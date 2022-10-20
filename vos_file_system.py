@@ -149,3 +149,17 @@ class FileSystem:
             return str(process.stdout)
         else:
             return f'No such file: {script_path.path}'
+
+    def cat_file(self, filepath: str) -> str:
+        path: Path = Path(str(filepath))
+
+        if path.path.startswith('/'):
+            file_path: Path = path.as_local
+        else:
+            file_path: Path = Path(self.cwd.path + '\\' + path.path)
+
+        if os.path.exists(file_path.path) and os.path.isfile(file_path.path):
+            with open(file_path.path, 'r') as f:
+                return f.read()
+        else:
+            return f'No such file: {file_path.path}'

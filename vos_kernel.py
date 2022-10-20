@@ -3,6 +3,7 @@
 ##############################
 
 
+from os import system
 import art
 from vos_file_system import FileSystem
 from vos_logger import Logger
@@ -41,6 +42,7 @@ class Kernel:
         return f'{self.name} v{self.version} ({self.architecture})'
 
     def boot(self):
+        system('title ' + self.info_str)  # Set the title of the window.
         print(art.text2art(self.name))  # Print the name of the OS.
         # Print the OS details.
         print(f'Version: v{self.version}\tBuild: {self.build}\tRelease: {self.release}\tArch: {self.architecture}')
