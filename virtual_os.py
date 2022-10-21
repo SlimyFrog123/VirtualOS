@@ -3,11 +3,11 @@
 ##############################
 
 
-import sys
 from vos_logger import Logger
 from vos_kernel import Kernel
 from vos_file_system import FileSystem
 from vos_shell import Shell
+
 
 ##############################
 # MAIN PROGRAM

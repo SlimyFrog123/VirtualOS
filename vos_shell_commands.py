@@ -57,6 +57,10 @@ class ShellCommands:
                                                             usage='\tcat [file] - Displays the contents of a file.')
         _cat_command: Command = Command('cat', _cat_command_info, self.cat_command)
 
+        _rm_command_details: CommandInfo = CommandInfo(name='rm', description='Removes a file or directory.',
+                                                       usage='\trm [file] - Removes a file or directory.', needs_root=True)
+        _rm_command: Command = Command('rm', _rm_command_details, self.rm_command)
+
         # Add commands to the list.
         self.commands[_help_command.keyword] = _help_command
         self.commands[_clear_command.keyword] = _clear_command
@@ -66,6 +70,7 @@ class ShellCommands:
         self.commands[_python_command.keyword] = _python_command
         self.commands[_poweroff_command.keyword] = _poweroff_command
         self.commands[_cat_command.keyword] = _cat_command
+        self.commands[_rm_command.keyword] = _rm_command
 
     def run(self, args: list, as_admin: bool) -> str:
         for command in self.commands.values():
@@ -125,7 +130,7 @@ class ShellCommands:
         else:
             return self.file_system.run_python_script(args[0])
 
-    def poweroff_command(self, args: list, as_admin: bool) -> str:
+    def poweroff_command(self, args: list, as_admin: bool):
         if as_admin:
             quit()
 
@@ -134,3 +139,9 @@ class ShellCommands:
             return 'Please specify a file.'
         else:
             return self.file_system.cat_file(args[0])
+
+    def rm_command(self, args: list, as_admin: bool) -> str:
+        if len(args) == 0:
+            return 'Please specify a file or directory.'
+        else:
+            return self.file_system.rm_item(args[0], ('-y' in args))

@@ -4,6 +4,7 @@
 
 
 import os
+import shutil
 import subprocess
 import pathlib
 
@@ -163,3 +164,31 @@ class FileSystem:
                 return f.read()
         else:
             return f'No such file: {file_path.path}'
+
+    def rm_item(self, filepath: str, skip_confirmation: bool = False) -> str:
+        path: Path = Path(str(filepath))
+
+        if path.path.startswith('/'):
+            file_path: Path = path.as_local
+        else:
+            file_path: Path = Path(self.cwd.path + '\\' + path.path)
+
+        if os.path.exists(file_path.path):
+            if skip_confirmation:
+                if os.path.isdir(file_path.path):
+                    os.rmdir(file_path.path)
+                else:
+                    os.remove(file_path.path)
+
+                return f'Deleted {file_path.path}'
+            else:
+                if input('Would you like to delete this item? [Y/n] ') == 'Y':
+                    if os.path.isdir(file_path.path):
+                        os.rmdir(file_path.path)
+                    else:
+                        os.remove(file_path.path)
+                    return f'Deleted {file_path.path}'
+                else:
+                    return ''
+        else:
+            return f'No such file or directory: {file_path.path}'
