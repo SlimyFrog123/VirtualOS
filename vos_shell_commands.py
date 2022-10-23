@@ -86,20 +86,20 @@ class ShellCommands:
 
     def help_command(self, args: list, as_admin: bool) -> str:
         if len(args) == 0:
-            return self.commands['help'].info
+            return str(self.commands['help'].info) + f'\n\tNeeds Root: {self.commands["help"].info.needs_root}'
         else:
             if args[0] == '-a':
                 return_str: str = ''
 
                 for command in self.commands.values():
-                    return_str += f'{command.info}\n\n'
+                    return_str += f'{command.info}\n\tNeeds Root: {command.info.needs_root}\n\n'
 
                 return_str = return_str.rstrip('\n\n')
 
                 return return_str
             else:
                 if args[0] in self.commands:
-                    return self.commands[args[0]].info
+                    return str(self.commands[args[0]].info) + f'\n\tNeeds Root: {self.commands[args[0]].info.needs_root}'
                 else:
                     return f'Command not found: {args[0]}'
 

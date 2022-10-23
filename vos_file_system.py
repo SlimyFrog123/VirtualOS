@@ -4,7 +4,6 @@
 
 
 import os
-import shutil
 import subprocess
 import pathlib
 
@@ -122,20 +121,20 @@ class FileSystem:
             # Absolute path from the start of the file system.
             attempted_path: Path = path.as_virtual
 
-            if os.path.exists(attempted_path.path) and os.path.isdir(attempted_path.path):
-                self.cwd = attempted_path
+            if os.path.exists(attempted_path.as_local.path) and os.path.isdir(attempted_path.as_local.path):
+                self.cwd = attempted_path.as_local
                 return ''
             else:
-                return f'No such directory: {attempted_path.path}'
+                return f'No such directory: {attempted_path.path} ({attempted_path.as_local.path})'
         else:
             # Relative path from the current working directory.
-            attempted_path: Path = Path(os.path.join(self.cwd.path, path.as_local.path))
+            attempted_path: Path = Path(self.cwd.path + os.sep + path.path.replace('/', os.sep).replace('\\', os.sep))
 
             if os.path.exists(attempted_path.path) and os.path.isdir(attempted_path.path):
                 self.cwd = attempted_path
                 return ''
             else:
-                return f'No such directory: {attempted_path.path}'
+                return f'No such directory: {attempted_path.path} ({attempted_path.as_local.path})'
 
     def run_python_script(self, filepath: str) -> str:
         path: Path = Path(str(filepath))
