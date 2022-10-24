@@ -125,7 +125,7 @@ class FileSystem:
                 self.cwd = attempted_path.as_local
                 return ''
             else:
-                return f'No such directory: {attempted_path.path} ({attempted_path.as_local.path})'
+                return f'No such directory: {attempted_path.path}'
         else:
             # Relative path from the current working directory.
             attempted_path: Path = Path(self.cwd.path + os.sep + path.path.replace('/', os.sep).replace('\\', os.sep))
@@ -134,7 +134,7 @@ class FileSystem:
                 self.cwd = attempted_path
                 return ''
             else:
-                return f'No such directory: {attempted_path.path} ({attempted_path.as_local.path})'
+                return f'No such directory: {attempted_path.path}'
 
     def run_python_script(self, filepath: str) -> str:
         path: Path = Path(str(filepath))
