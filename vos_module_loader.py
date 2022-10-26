@@ -48,28 +48,18 @@ class ModuleLoader:
         for item in os.scandir(self.module_folder):
             if item.is_file():
                 if item.name.endswith('.py') and not item.name.startswith('__'):
-                    module_file_name: str = item.name.replace('.py', '')  # Get the module name.
-                    module = __import__(f'{self.module_folder}.{module_file_name}')  # Import the module.
-                    module = getattr(module, module_file_name)  # Get the module from the import.
+                    module_file_name_no_ext: str = item.name.replace('.py', '')
+                    module_file_name: str = item.name
 
-                    module_name = module.module['name']  # Get the module's actual name.
-                    module_exists: bool = False
-
-                    for module in self.modules:
-                        if module['name'] == module_name:
-                            module_exists = True
-                            break
-
-                    module_file_name = module_file_name + '.py'
-
-                    if module_exists:
-                        self.logger.log(f'Could not load module "{module_name}" (file: {module_file_name}) because it '
-                                        f'is already loaded.',
-                                        Priority.HIGH)
-                    else:
+                    try:
+                        module = __import__(f'{self.module_folder}.{module_file_name_no_ext}',
+                                            fromlist=[module_file_name_no_ext])
                         self.modules.append(module.module)
 
-                        self.logger.log(f'Loaded module: {module_name} (file: {module_file_name}).')
+                        self.logger.log(f'Loaded module: "{module.module["name"]}".', Priority.NONE)
+                    except Exception as e:
+                        self.logger.log(f'Failed to load module: "{module_file_name}".', Priority.HIGH)
+                        self.logger.log(f'Error: {e}.', Priority.HIGH)
 
     def get_module_commands(self) -> list:
         """Load the commands from all modules."""

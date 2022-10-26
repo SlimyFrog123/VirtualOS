@@ -164,6 +164,24 @@ class FileSystem:
         else:
             return f'No such file: {file_path.path}'
 
+    def get_file_lines(self, filepath: str) -> tuple[str, list]:
+        path: Path = Path(str(filepath))
+
+        lines: list = list()
+
+        if path.path.startswith('/'):
+            file_path: Path = path.as_local
+        else:
+            file_path: Path = Path(self.cwd.path + '\\' + path.path)
+
+        if os.path.exists(file_path.path) and os.path.isfile(file_path.path):
+            with open(file_path.path, 'r') as f:
+                lines = f.readlines()
+        else:
+            return f'No such file: {file_path.path}', list()
+
+        return '', lines
+
     def rm_item(self, filepath: str, skip_confirmation: bool = False) -> str:
         path: Path = Path(str(filepath))
 

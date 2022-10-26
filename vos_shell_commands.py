@@ -28,7 +28,7 @@ class ShellCommands:
     def initialize(self):
         """Initializes the shell commands."""
         _help_command_info: CommandInfo = CommandInfo(name='help', description='Displays help for a command.',
-                                                      usage='\thelp [command] - Displays help for a specific '
+                                                      usage='\thelp <command> - Displays help for a specific '
                                                             'command.\n\thelp -a - Displays help for all commands.')
         _help_command: Command = Command('help', _help_command_info, self.help_command)
 
@@ -37,11 +37,11 @@ class ShellCommands:
         _clear_command: Command = Command('clear', _clear_command_info, self.clear_command)
 
         _ls_command_info: CommandInfo = CommandInfo(name='ls', description='Lists the contents of a directory.',
-                                                    usage='\tls [directory] - Lists the contents of a directory.')
+                                                    usage='\tls <directory> - Lists the contents of a directory.')
         _ls_command: Command = Command('ls', _ls_command_info, self.ls_command)
 
         _cd_command_info: CommandInfo = CommandInfo(name='cd', description='Changes the current directory.',
-                                                    usage='\tcd [directory] - Changes the current directory.')
+                                                    usage='\tcd <directory> - Changes the current directory.')
         _cd_command: Command = Command('cd', _cd_command_info, self.cd_command)
 
         _os_info_command_info: CommandInfo = CommandInfo(name='osinfo', description='Displays the OS info.',
@@ -49,7 +49,7 @@ class ShellCommands:
         _os_info_command: Command = Command('osinfo', _os_info_command_info, self.osinfo_command)
 
         _python_command_info: CommandInfo = CommandInfo(name='python', description='Runs a Python script.',
-                                                        usage='\tpython [script] - Runs a Python script.',
+                                                        usage='\tpython <script> - Runs a Python script.',
                                                         needs_root=True)
         _python_command: Command = Command('python', _python_command_info, self.python_command)
 
@@ -60,25 +60,25 @@ class ShellCommands:
         _power_off_command: Command = Command('poweroff', _power_off_command_info, self.poweroff_command)
 
         _cat_command_info: CommandInfo = CommandInfo(name='cat', description='Displays the contents of a file.',
-                                                     usage='\tcat [file] - Displays the contents of a file.')
+                                                     usage='\tcat <file> - Displays the contents of a file.')
         _cat_command: Command = Command('cat', _cat_command_info, self.cat_command)
 
         _rm_command_details: CommandInfo = CommandInfo(name='rm', description='Removes a file or directory.',
-                                                       usage='\trm [file] - Removes a file or directory.',
+                                                       usage='\trm <file> - Removes a file or directory.',
                                                        needs_root=True)
         _rm_command: Command = Command('rm', _rm_command_details, self.rm_command)
 
         _source_command_details: CommandInfo = CommandInfo(name='source', description='Displays the source module of a '
                                                                                       'command',
-                                                           usage='\tsource [command] - Displays the source module of a '
+                                                           usage='\tsource <command> - Displays the source module of a '
                                                                  'command', needs_root=False)
         _source_command: Command = Command('source', _source_command_details, self.source_command)
 
         _module_command_details: CommandInfo = CommandInfo(name='module', description='Displays information about a '
                                                                                       'module',
-                                                           usage='\tmodule [module] - Displays information about a '
+                                                           usage='\tmodule <module> - Displays information about a '
                                                                  'module\n\tmodule -a - Displays all the modules '
-                                                                 'currently active on the system.\n\tmodule [module] '
+                                                                 'currently active on the system.\n\tmodule <module> '
                                                                  '-rm - Removes a module from the system.',
                                                            needs_root=False)
         _module_command: Command = Command('module', _module_command_details, self.module_command)
@@ -104,7 +104,10 @@ class ShellCommands:
                 if command.info.needs_root and not as_admin:
                     return 'You need to be root to run this command.'
                 else:
-                    return command.invoke(args[1:], as_admin)
+                    if command.info.needs_fs:
+                        return command.invoke(args=args[1:], as_root=as_admin, file_system=self.file_system)
+                    else:
+                        return command.invoke(args=args[1:], as_root=as_admin)
 
         return f'Command not found: "{args[0]}".'
 
@@ -120,7 +123,7 @@ class ShellCommands:
 
             command_info: CommandInfo = CommandInfo(name=command['name'], description=command['description'],
                                                     usage=command['usage'], needs_root=command['needs_root'],
-                                                    source_module=module)
+                                                    source_module=module, needs_fs=command['needs_fs'])
             command: Command = Command(command['keyword'], command_info, command['function'])
 
             if command.keyword not in self.commands:
