@@ -39,6 +39,7 @@ def download(url: str, file: Path):
     except Exception as e:
         return f'Error: {e}.'
 
+
 def wget_command(args: list, as_admin: bool, file_system: FileSystem) -> str:
     if len(args) == 0:
         return 'Please specify a url to download from.'
