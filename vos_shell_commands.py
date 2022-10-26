@@ -9,6 +9,7 @@ from vos_file_system import FileSystem, Path
 from vos_module_loader import ModuleLoader
 from vos_logger import Logger
 from vos_priority import Priority
+from vos_shell_lexer import Lexer
 
 
 ##############################
@@ -83,6 +84,16 @@ class ShellCommands:
                                                            needs_root=False)
         _module_command: Command = Command('module', _module_command_details, self.module_command)
 
+        _bash_command_details: CommandInfo = CommandInfo(name='bash', description='Runs a bash script.',
+                                                            usage='\tbash <script> - Runs a bash script.',
+                                                            needs_root=False)
+        _bash_command: Command = Command('bash', _bash_command_details, self.bash_command)
+
+        _echo_commands_details: CommandInfo = CommandInfo(name='echo', description='Prints a message.',
+                                                            usage='\techo <message> - Prints a message.',
+                                                            needs_root=False)
+        _echo_command: Command = Command('echo', _echo_commands_details, self.echo_command)
+
         # Add commands to the list.
         self.commands[_help_command.keyword] = _help_command
         self.commands[_clear_command.keyword] = _clear_command
@@ -95,6 +106,8 @@ class ShellCommands:
         self.commands[_rm_command.keyword] = _rm_command
         self.commands[_source_command.keyword] = _source_command
         self.commands[_module_command.keyword] = _module_command
+        self.commands[_bash_command.keyword] = _bash_command
+        self.commands[_echo_command.keyword] = _echo_command
 
         self.load_module_commands()
 
@@ -224,3 +237,36 @@ class ShellCommands:
                     result = f'Removed command: "{command["keyword"]}".\n{result}'
 
             return result
+
+    def bash_command(self, args: list, as_admin: bool) -> str:
+        if len(args) == 0:
+            return 'Please specify a file.'
+        else:
+            error, lines = self.file_system.get_file_lines(args[0])
+
+            if error != '':
+                return error
+            else:
+                for line in lines:
+                    if not line.strip() == '':
+                        lexer: Lexer = Lexer(text=line.strip(), logger=self.logger)  # Create a lexer.
+                        tokens = lexer.lex()
+
+                        if len(tokens) > 0:
+                            as_admin: bool = False
+
+                            if tokens[0] == 'sudo':
+                                as_admin = True
+                                tokens.pop(0)
+
+                            output = self.run(args=tokens, as_admin=as_admin)
+
+                            if not output == '' and output is not None and str(output) != 'None':
+                                print(output)
+
+                        self.run(args=tokens, as_admin=as_admin)
+
+                return ''
+
+    def echo_command(self, args: list, as_admin: bool) -> str:
+        return ''.join(args)
