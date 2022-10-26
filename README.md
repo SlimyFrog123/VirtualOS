@@ -20,3 +20,11 @@ Then, install the required dependencies:
 
 Then, run `virtual_os.py` after installing the dependencies:
 `python3 virtual_os.py`
+
+Credits
+-------
+
+Thank you to everyone that I have used code from, this wouldn't have been possible without you!
+
+Used in the project:
+ - https://github.com/davidcallanan/py-myopl-code/ - Code for the BASIC interpreter module (tweaked a bit to fit the needs of the project).
