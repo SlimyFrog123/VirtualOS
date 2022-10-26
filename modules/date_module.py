@@ -25,7 +25,7 @@ module: dict = {
     'author': 'DJ Cook (@SlimyFrog123)',
     'commands': {
         'date_command': {
-            'name': 'date_command',
+            'name': 'date',
             'keyword': 'date',
             'description': 'Shows the current date',
             'usage': '\tdate - Shows the current date\n\tdate -t - Shows the current date and time',

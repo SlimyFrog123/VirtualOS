@@ -65,7 +65,7 @@ module: dict = {
     'author': 'DJ Cook (@SlimyFrog123)',
     'commands': {
         'wprint_command': {
-            'name': 'wprint_command',
+            'name': 'wprint',
             'keyword': 'wprint',
             'description': 'Prints the contents of a website.',
             'usage': '\twprint <url> - Prints the contents of a website.',
@@ -74,7 +74,7 @@ module: dict = {
             'function': wprint_command
         },
         'wget_command': {
-            'name': 'wget_command',
+            'name': 'wget',
             'keyword': 'wget',
             'description': 'Downloads a file from a website.',
             'usage': '\twget <url> <file> - Downloads a file from a website.',

@@ -2353,7 +2353,7 @@ module: dict = {
     'author': 'DJ Cook (@SlimyFrog123), David Callanan (@davidcallanan) for the original script.',
     'commands': {
         'basic_command': {
-            'name': 'basic_command',
+            'name': 'basic',
             'keyword': 'basic',
             'description': 'Execute a BASIC script.',
             'usage': '\tbasic - Open the BASIC shell.\n\tbasic <file> - Execute a BASIC script.',
