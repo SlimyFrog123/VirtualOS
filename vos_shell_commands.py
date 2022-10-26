@@ -238,7 +238,6 @@ class ShellCommands:
 
             return result
 
-
     def bash_command(self, args: list, as_admin: bool) -> str:
         if len(args) == 0:
             return 'Please specify a file.'
