@@ -38,6 +38,13 @@ class ModuleLoader:
         if not os.path.exists(self.module_folder):
             os.mkdir(self.module_folder)
 
+            with open(self.module_folder + os.sep + '__init__.py', 'w') as f:
+                f.write('')
+        else:
+            if not os.path.exists(self.module_folder + os.sep + '__init__.py'):
+                with open(self.module_folder + os.sep + '__init__.py', 'w') as f:
+                    f.write('')
+
         for item in os.scandir(self.module_folder):
             if item.is_file():
                 if item.name.endswith('.py') and not item.name.startswith('__'):
