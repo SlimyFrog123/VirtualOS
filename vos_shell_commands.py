@@ -6,6 +6,9 @@
 import os
 from vos_commands import Command, CommandInfo
 from vos_file_system import FileSystem, Path
+from vos_module_loader import ModuleLoader
+from vos_logger import Logger
+from vos_priority import Priority
 
 
 ##############################
@@ -14,10 +17,12 @@ from vos_file_system import FileSystem, Path
 
 
 class ShellCommands:
-    def __init__(self, file_system: FileSystem, os_info: str):
+    def __init__(self, file_system: FileSystem, os_info: str, logger: Logger):
         self.commands: dict = {}
         self.file_system: FileSystem = file_system
         self.os_info = os_info
+        self.logger = logger
+        self.module_loader: ModuleLoader = ModuleLoader(logger=self.logger)
         self.initialize()
 
     def initialize(self):
@@ -48,18 +53,35 @@ class ShellCommands:
                                                         needs_root=True)
         _python_command: Command = Command('python', _python_command_info, self.python_command)
 
-        _poweroff_command_info: CommandInfo = CommandInfo(name='poweroff', description='Shutdowns the operating system.',
-                                                            usage='\tpoweroff - Shutdowns the operating system.',
-                                                            needs_root=True)
-        _poweroff_command: Command = Command('poweroff', _poweroff_command_info, self.poweroff_command)
+        _power_off_command_info: CommandInfo = CommandInfo(name='poweroff',
+                                                           description='Shutdowns the operating system.',
+                                                           usage='\tpoweroff - Shutdowns the operating system.',
+                                                           needs_root=True)
+        _power_off_command: Command = Command('poweroff', _power_off_command_info, self.poweroff_command)
 
         _cat_command_info: CommandInfo = CommandInfo(name='cat', description='Displays the contents of a file.',
-                                                            usage='\tcat [file] - Displays the contents of a file.')
+                                                     usage='\tcat [file] - Displays the contents of a file.')
         _cat_command: Command = Command('cat', _cat_command_info, self.cat_command)
 
         _rm_command_details: CommandInfo = CommandInfo(name='rm', description='Removes a file or directory.',
-                                                       usage='\trm [file] - Removes a file or directory.', needs_root=True)
+                                                       usage='\trm [file] - Removes a file or directory.',
+                                                       needs_root=True)
         _rm_command: Command = Command('rm', _rm_command_details, self.rm_command)
+
+        _source_command_details: CommandInfo = CommandInfo(name='source', description='Displays the source module of a '
+                                                                                      'command',
+                                                           usage='\tsource [command] - Displays the source module of a '
+                                                                 'command', needs_root=False)
+        _source_command: Command = Command('source', _source_command_details, self.source_command)
+
+        _module_command_details: CommandInfo = CommandInfo(name='module', description='Displays information about a '
+                                                                                      'module',
+                                                           usage='\tmodule [module] - Displays information about a '
+                                                                 'module\n\tmodule -a - Displays all the modules '
+                                                                 'currently active on the system.\n\tmodule [module] '
+                                                                 '-rm - Removes a module from the system.',
+                                                           needs_root=False)
+        _module_command: Command = Command('module', _module_command_details, self.module_command)
 
         # Add commands to the list.
         self.commands[_help_command.keyword] = _help_command
@@ -68,9 +90,13 @@ class ShellCommands:
         self.commands[_cd_command.keyword] = _cd_command
         self.commands[_os_info_command.keyword] = _os_info_command
         self.commands[_python_command.keyword] = _python_command
-        self.commands[_poweroff_command.keyword] = _poweroff_command
+        self.commands[_power_off_command.keyword] = _power_off_command
         self.commands[_cat_command.keyword] = _cat_command
         self.commands[_rm_command.keyword] = _rm_command
+        self.commands[_source_command.keyword] = _source_command
+        self.commands[_module_command.keyword] = _module_command
+
+        self.load_module_commands()
 
     def run(self, args: list, as_admin: bool) -> str:
         for command in self.commands.values():
@@ -80,7 +106,27 @@ class ShellCommands:
                 else:
                     return command.invoke(args[1:], as_admin)
 
-        return f'Command not found: {args[0]}'
+        return f'Command not found: "{args[0]}".'
+
+    def load_module_commands(self):
+        """Loads the commands from the modules."""
+        self.module_loader.initialize()
+
+        module_commands: list = self.module_loader.get_module_commands()
+
+        for command in module_commands:
+            module = command['module']
+            command = command['command']
+
+            command_info: CommandInfo = CommandInfo(name=command['name'], description=command['description'],
+                                                    usage=command['usage'], needs_root=command['needs_root'],
+                                                    source_module=module)
+            command: Command = Command(command['keyword'], command_info, command['function'])
+
+            if command.keyword not in self.commands:
+                self.commands[command.keyword] = command
+            else:
+                self.logger.log(f'Command {command.keyword} already exists.', Priority.HIGH)
 
     ##############################
 
@@ -99,7 +145,8 @@ class ShellCommands:
                 return return_str
             else:
                 if args[0] in self.commands:
-                    return str(self.commands[args[0]].info) + f'\n\tNeeds Root: {self.commands[args[0]].info.needs_root}'
+                    return str(
+                        self.commands[args[0]].info) + f'\n\tNeeds Root: {self.commands[args[0]].info.needs_root}'
                 else:
                     return f'Command not found: {args[0]}'
 
@@ -145,3 +192,32 @@ class ShellCommands:
             return 'Please specify a file or directory.'
         else:
             return self.file_system.rm_item(args[0], ('-y' in args))
+
+    def source_command(self, args: list, as_admin: bool) -> str:
+        if len(args) == 0:
+            return 'Please specify a command.'
+        else:
+            command = args[0]
+
+            if command in self.commands:
+                if self.commands[args[0]].info.source_module == '':
+                    return f'Command: "{command}" is a built-in command.'
+                else:
+                    source_module = self.commands[args[0]].info.source_module
+                    return f'Command: "{command} "is from module: "{source_module}".\nRun "module {source_module}" for ' \
+                           f'more information on the module.'
+            else:
+                return f'Command not found: "{args[0]}".'
+
+    def module_command(self, args: list, as_admin: bool) -> str:
+        if len(args) == 0:
+            return 'Please specify a module.'
+        else:
+            result, commands_to_remove = self.module_loader.module_command(args=args, as_admin=as_admin)
+
+            for command in commands_to_remove:
+                if command['keyword'] in self.commands:
+                    del self.commands[command['keyword']]
+                    result = f'Removed command: "{command["keyword"]}".\n{result}'
+
+            return result

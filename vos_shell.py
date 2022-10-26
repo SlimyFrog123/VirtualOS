@@ -27,15 +27,16 @@ class Shell:
         self.os_info = os_info
 
     def run(self):
+        # Create a shell commands object.
         shell_commands: ShellCommands = ShellCommands(file_system=self.file_system,
-                                                      os_info=self.os_info)  # Create a shell commands object.
+                                                      os_info=self.os_info, logger=self.logger)
 
         while True:
             try:
-                path_str: str = self.file_system.cwd.as_virtual.path
+                path_str: str = self.file_system.cwd.as_virtual.path  # The string that represents the current path.
 
                 if path_str.strip() == '/':
-                    path_str = '~'
+                    path_str = '~'  # ~ for base/home directory.
 
                 input_str: str = input(path_str + '$ ')
                 if input_str != '':

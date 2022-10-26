@@ -4,11 +4,12 @@
 
 
 class CommandInfo:
-    def __init__(self, name: str, description: str, usage: str, needs_root: bool = False):
+    def __init__(self, name: str, description: str, usage: str, needs_root: bool = False, source_module: str = ''):
         self.name = name
         self.description = description
         self.usage = usage
         self.needs_root = needs_root
+        self.source_module = source_module
 
     def __repr__(self):
         if self.needs_root:
