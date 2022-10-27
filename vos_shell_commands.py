@@ -94,6 +94,14 @@ class ShellCommands:
                                                             needs_root=False)
         _echo_command: Command = Command('echo', _echo_commands_details, self.echo_command)
 
+        _apt_command_details: CommandInfo = CommandInfo(name='apt', description='APT Package Manager.',
+                                                        usage='\tapt upgrade - Updates all packages.\n\tapt install '
+                                                            '<package> - Installs a package.\n\tapt remove '
+                                                            '<package> - Removes a package.\n\tapt update <package> - '
+                                                        'Updates a package.\n\tapt info <package> - Displays info about'
+                                                        ' a package.', needs_root=True, needs_fs=True)
+        _apt_command: Command = Command('apt', _apt_command_details, self.apt_command)
+
         # Add commands to the list.
         self.commands[_help_command.keyword] = _help_command
         self.commands[_clear_command.keyword] = _clear_command
@@ -108,6 +116,7 @@ class ShellCommands:
         self.commands[_module_command.keyword] = _module_command
         self.commands[_bash_command.keyword] = _bash_command
         self.commands[_echo_command.keyword] = _echo_command
+        self.commands[_apt_command.keyword] = _apt_command
 
         self.load_module_commands()
 
@@ -124,9 +133,10 @@ class ShellCommands:
 
         return f'Command not found: "{args[0]}".'
 
-    def load_module_commands(self):
+    def load_module_commands(self, again: bool = False):
         """Loads the commands from the modules."""
-        self.module_loader.initialize()
+        if not again:
+            self.module_loader.initialize()
 
         module_commands: list = self.module_loader.get_module_commands()
 
@@ -142,7 +152,8 @@ class ShellCommands:
             if command.keyword not in self.commands:
                 self.commands[command.keyword] = command
             else:
-                self.logger.log(f'Command {command.keyword} already exists.', Priority.HIGH)
+                if not again:
+                    self.logger.log(f'Command {command.keyword} already exists.', Priority.HIGH)
 
     ##############################
 
@@ -270,3 +281,23 @@ class ShellCommands:
 
     def echo_command(self, args: list, as_admin: bool) -> str:
         return ''.join(args)
+
+    def apt_command(self, args: list, as_admin: bool, file_system: FileSystem) -> str:
+        response = self.module_loader.apt_command(args, as_admin, file_system)
+
+        if response == 'reload_packages':
+            self.load_module_commands(True)
+            return 'Operation Succeeded!'
+        elif response == 'reload_packages_and_commands':
+            response = 'Operation Succeeded!'
+
+            for command in self.module_loader.commands_to_remove:
+                if command['keyword'] in self.commands:
+                    del self.commands[command['keyword']]
+                    response = f'Removed command: "{command["keyword"]}".\n{response}'
+
+            self.module_loader.commands_to_remove.clear()
+            self.module_loader.initialize()
+            self.load_module_commands(True)
+
+        return response
