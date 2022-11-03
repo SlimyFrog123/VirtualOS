@@ -17,6 +17,7 @@ Then, install the required dependencies:
  - `pip install pathlib`
  - `pip install requests`
  - `pip install colorama`
+ - `pip install tqdm`
 
 Then, run `virtual_os.py` after installing the dependencies:
 `python3 virtual_os.py`
